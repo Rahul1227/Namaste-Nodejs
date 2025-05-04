@@ -20,8 +20,12 @@ fs.readFile('./ReadFile.txt','utf-8', (err,data)=>{
     if(err){
         console.error('Error while reading the file', err);
     }else{
-        console.log('the data from the async read is', data);
+        console.log('the data from the async read :', data);
     }
 })
 
 //reading file synchronously
+const data = fs.readFileSync('./ReadFile.txt','utf-8');
+console.log('Reading syncronously:',data);
+
+
