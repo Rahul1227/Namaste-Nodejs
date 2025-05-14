@@ -23,9 +23,9 @@ app.post("/signup", async (req, res) => {
       data: req.body,
     });
   } catch (err) {
-    res.status(400).send({
+    res.status(500).send({
       message: "Something went wrong",
-      error: err,
+      error: err.message,
     });
   }
 });
@@ -44,7 +44,7 @@ app.get("/user", async (req, res) => {
         res.status(200).send(users);
       }
     } catch (err) {
-      res.status(400).send({
+      res.status(500).send({
         message: "Something went wrong",
         error: err,
       });
@@ -53,21 +53,67 @@ app.get("/user", async (req, res) => {
 });
 
 // making feedroute to get all the users
-app.get('/feed', async (req, res)=>{
-    try{
-        const users = await User.find({});
-        if(users.length === 0){
-            res.status(404).send('Database is empty');
-        }else{
-            res.status(200).send(users);
-        }
-
-    }catch(err){
-        res.status(400).send({
-            message : "something wend wrong",
-            error : err
-        })
+app.get("/feed", async (req, res) => {
+  try {
+    const users = await User.find({});
+    if (users.length === 0) {
+      res.status(404).send("Database is empty");
+    } else {
+      res.status(200).send(users);
     }
-})
+  } catch (err) {
+    res.status(500).send({
+      message: "something went wrong",
+      error: err,
+    });
+  }
+});
+
+// delete api to delete the user
+app.delete("/user", async (req, res) => {
+  const userId = req.body.userId;
+  try {
+    const userInDB = await User.findById(userId);
+    // console.log(userInDB);
+    if (!userInDB) {
+      res.status(400).send("No user with this Id exist in the database");
+    } else {
+      await User.findByIdAndDelete(userId);
+      res.status(204).send("User deleted Successfully");
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: "something went wrong",
+      error: err,
+    });
+  }
+});
+
+// update api for updating the user data
+app.patch("/user", async (req, res) => {
+  const userId = req.body.userId;
+  const data = req.body;
+  try {
+    const userInDB = await User.findById(userId);
+    if (!userInDB) {
+      res.status(400).send("No user with this id exist in the database");
+    } else {
+      const returnedUser = await User.findByIdAndUpdate(userId, data, {
+        returnDocument: "after",
+        runValidators: true,
+      });
+      // const user = await User.findById(userId);
+      res.status(200).send({
+        message: "User updated successfully",
+        data: returnedUser,
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      message: "something went wrong",
+      error: err,
+    });
+  }
+});
 
 app.listen(port, () => console.log(`Server is listening on port ${port}!`));
